@@ -29,6 +29,7 @@ import { verbose } from "../utils/output.js";
 import { SOURCES_DIR } from "../utils/constants.js";
 import pLimit from "p-limit";
 import { reusableExtraction } from "./extraction-snapshot.js";
+import { buildRelevantConceptContext } from "./extraction-context.js";
 import type {
   ExtractedConcept,
   SourceChange,
@@ -140,8 +141,16 @@ async function extractForSource(
   const lines = sourceContent.split("\n").length;
   const chars = sourceContent.length;
   verbose(`source ${sourceFile}: ${lines} lines, ${chars} chars`);
-  const existingIndex = await access.readExtractionIndex();
-  const concepts = await extractConcepts(sourceContent, existingIndex);
+
+  // Build semantically-relevant concept context for deduplication.
+  // Uses embedding-based retrieval when available, falls back to truncated index.
+  const fallbackIndex = await access.readExtractionIndex();
+  const root = access.projectRoot?.();
+  const conceptContext = root
+    ? await buildRelevantConceptContext(root, sourceContent, fallbackIndex)
+    : fallbackIndex;
+
+  const concepts = await extractConcepts(sourceContent, conceptContext);
 
   if (concepts && concepts.length > 0) {
     const names = concepts.map((c) => c.concept).join(", ");

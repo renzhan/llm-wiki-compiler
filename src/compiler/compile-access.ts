@@ -76,6 +76,12 @@ export interface CompileAccess {
   readSource(file: string): Promise<string>;
   /** The wiki index used as extraction dedup context; empty when absent. */
   readExtractionIndex(): Promise<string>;
+  /**
+   * Project root directory (optional). When available, enables semantic
+   * retrieval of relevant concepts for extraction context. Falls back to
+   * full index.md when unavailable (non-local projects).
+   */
+  projectRoot?(): string;
   /** One concept page's full content; empty when absent or dropped. */
   readConceptPage(slug: string, warnAlways?: boolean): Promise<string>;
   /** File names (`<slug>.md`) in the concepts namespace, in listing order. */
@@ -193,7 +199,11 @@ function diskCompileRecords(root: string): CompileRecords {
  * @returns Access backed by the project's files and legacy candidate store.
  */
 export function diskCompileAccess(root: string): CompileAccess {
-  return localCompileAccess(diskLocalReads(root), diskCompileRecords(root), diskSourceHashText(root));
+  const base = localCompileAccess(diskLocalReads(root), diskCompileRecords(root), diskSourceHashText(root));
+  return {
+    ...base,
+    projectRoot: () => root,
+  };
 }
 
 /** A project given either as its seam or, for local callers, as a root directory. */
