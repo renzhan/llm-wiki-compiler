@@ -191,7 +191,7 @@ async function collectTypedPages(entities: LegacyLocalEntityScans, profile: Load
 }
 
 /** Build a {@link CollectedPage} from a pageId + record, computing live hashes. */
-function toCollectedPage(pageId: PageId, record: PageRecord): CollectedPage {
+export function toCollectedPage(pageId: PageId, record: PageRecord): CollectedPage {
   const embeddingText = buildEmbeddingText(record);
   const chunkTexts = splitIntoChunks(record.body);
   return {

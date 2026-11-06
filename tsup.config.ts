@@ -53,7 +53,7 @@ export default defineConfig(async (options) => {
   },
   {
     ...shared,
-    entry: ["src/index.ts"],
+    entry: ["src/index.ts", "src/hosted/index.ts"],
     // Per-entry targeted clean: only this bundle's own outputs, never the CLI's.
     clean: ["dist/index.js", "dist/index.js.map", "dist/index.d.ts"],
     dts: true,
